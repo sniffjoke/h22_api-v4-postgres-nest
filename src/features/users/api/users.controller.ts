@@ -23,7 +23,6 @@ export class UsersController {
     private readonly commandBus: CommandBus,
     private readonly usersService: UsersService,
     private readonly usersQueryRepository: UsersQueryRepository,
-    // private readonly createUserUseCase: CreateUserUseCase,
   ) {
   }
 
