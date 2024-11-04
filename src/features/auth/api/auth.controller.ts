@@ -1,5 +1,4 @@
 import { Body, Controller, Get, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { AuthService } from '../application/auth.service';
 import { Request, Response } from 'express';
 import {
   EmailActivateDto,
@@ -11,20 +10,21 @@ import { UserAgent } from '../../../core/decorators/common/user-agent.decorator'
 import ip from 'ip'
 import { CreateUserDto } from '../../users/api/models/input/create-user.dto';
 import { UsersQueryRepository } from '../../users/infrastructure/users.query-repositories';
-import { UsersService } from '../../users/application/users.service';
 import { JwtAuthGuard } from '../../../core/guards/jwt-auth.guard';
 import { CreateUserCommand } from '../../users/application/useCases/create-user.use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { ActivateEmailCommand } from '../../users/application/useCases/activate-email.use-case';
 import { ResendEmailCommand } from '../../users/application/useCases/resend-email.use-case';
+import { LoginCommand } from '../application/useCases/login.use-case';
+import { GetMeCommand } from '../application/useCases/get-me.use-case';
+import { RefreshTokenCommand } from '../application/useCases/refresh-token.use-case';
+import { LogoutCommand } from '../application/useCases/logout.use-case';
 
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly authService: AuthService,
-    private readonly usersService: UsersService,
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {
   }
@@ -32,7 +32,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getMe(@Req() req: Request) {
-    const userData = await this.authService.getMe(req.headers.authorization as string);
+    const userData = await this.commandBus.execute(new GetMeCommand(req.headers.authorization as string));
     return userData;
   }
 
@@ -44,7 +44,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
     @UserAgent() userAgent: string,
   ) {
-    const { accessToken, refreshToken } = await this.authService.login(loginDto, ip.address() as string, userAgent);
+    const { accessToken, refreshToken } = await this.commandBus.execute(new LoginCommand(loginDto, ip.address() as string, userAgent));
     response.cookie('refreshToken', refreshToken, {
       secure: true,
       httpOnly: true,
@@ -67,7 +67,7 @@ export class AuthController {
   @Post('refresh-token')
   @HttpCode(200)
   async refreshToken(@Req() req: Request, @Res({ passthrough: true }) response: Response) {
-    const { refreshToken, accessToken } = await this.authService.refreshToken(req.cookies);
+    const { refreshToken, accessToken } = await this.commandBus.execute(new RefreshTokenCommand(req.cookies));
     response.cookie('refreshToken', refreshToken, {
       secure: true,
       httpOnly: true,
@@ -81,7 +81,7 @@ export class AuthController {
   @Post('logout')
   @HttpCode(204)
   async logout(@Req() req: Request, @Res({ passthrough: true }) response: Response) {
-    const logoutUser = await this.authService.logoutUser(req.cookies);
+    const logoutUser = await this.commandBus.execute(new LogoutCommand(req.cookies));
     response.clearCookie('refreshToken');
     return logoutUser;
   }
