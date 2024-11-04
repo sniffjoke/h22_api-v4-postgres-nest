@@ -13,8 +13,10 @@ import { CreateUserDto } from '../../users/api/models/input/create-user.dto';
 import { UsersQueryRepository } from '../../users/infrastructure/users.query-repositories';
 import { UsersService } from '../../users/application/users.service';
 import { JwtAuthGuard } from '../../../core/guards/jwt-auth.guard';
-import { CreateUserCommand, CreateUserUseCase } from '../../users/application/useCases/create-user.use-case';
+import { CreateUserCommand } from '../../users/application/useCases/create-user.use-case';
 import { CommandBus } from '@nestjs/cqrs';
+import { ActivateEmailCommand } from '../../users/application/useCases/activate-email.use-case';
+import { ResendEmailCommand } from '../../users/application/useCases/resend-email.use-case';
 
 
 @Controller('auth')
@@ -24,7 +26,6 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
     private readonly usersQueryRepository: UsersQueryRepository,
-    // private readonly userCreateUserUseCase: CreateUserUseCase,
   ) {
   }
 
@@ -58,7 +59,6 @@ export class AuthController {
   @HttpCode(204)
   @UseGuards(ThrottlerGuard)
   async register(@Body() createUserDto: CreateUserDto) {
-    // const userId = await this.userCreateUserUseCase.execute(createUserDto, false);
     const userId = await this.commandBus.execute(new CreateUserCommand(createUserDto, false))
     const newUser = await this.usersQueryRepository.userOutput(userId);
     return newUser;
@@ -90,7 +90,7 @@ export class AuthController {
   @HttpCode(204)
   @UseGuards(ThrottlerGuard)
   async activateEmail(@Body() dto: EmailActivateDto) {
-    const activateEmail = await this.usersService.activateEmail(dto.code);
+    const activateEmail = await this.commandBus.execute(new ActivateEmailCommand(dto.code));
     return activateEmail;
   }
 
@@ -98,7 +98,7 @@ export class AuthController {
   @HttpCode(204)
   @UseGuards(ThrottlerGuard)
   async resendEmail(@Body() dto: ResendActivateCodeDto) {
-    return await this.usersService.resendEmail(dto.email);
+    return await this.commandBus.execute(new ResendEmailCommand(dto.email));
   }
 
   // @Post('password-recovery')

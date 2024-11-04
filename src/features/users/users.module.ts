@@ -8,9 +8,10 @@ import { CryptoModule } from '../../core/modules/crypto/crypto.module';
 import { UsersQueryRepository } from './infrastructure/users.query-repositories';
 import { UserEntity } from './domain/user.entity';
 import { EmailConfirmationEntity } from './domain/email-confirmation.entity';
-import { CreateUserCommand, CreateUserUseCase } from './application/useCases/create-user.use-case';
-import { CommandBus, CqrsModule } from '@nestjs/cqrs';
+import { CreateUserUseCase } from './application/useCases/create-user.use-case';
 import { DeleteUserUseCase } from './application/useCases/delete-user.use-case';
+import { ActivateEmailUseCase } from './application/useCases/activate-email.use-case';
+import { ResendEmailUseCase } from './application/useCases/resend-email.use-case';
 
 @Module({
   imports: [
@@ -24,7 +25,9 @@ import { DeleteUserUseCase } from './application/useCases/delete-user.use-case';
     UsersRepository,
     UsersQueryRepository,
     CreateUserUseCase,
-    DeleteUserUseCase
+    DeleteUserUseCase,
+    ActivateEmailUseCase,
+    ResendEmailUseCase
   ],
   exports: [
     CryptoModule,
@@ -33,7 +36,9 @@ import { DeleteUserUseCase } from './application/useCases/delete-user.use-case';
     UsersRepository,
     UsersQueryRepository,
     CreateUserUseCase,
-    DeleteUserUseCase
+    DeleteUserUseCase,
+    ActivateEmailUseCase,
+    ResendEmailUseCase
   ],
 })
 export class UsersModule {

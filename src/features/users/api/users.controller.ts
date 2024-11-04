@@ -9,7 +9,6 @@ import {
   HttpCode,
   Query
 } from '@nestjs/common';
-import { UsersService } from '../application/users.service';
 import { CreateUserDto } from './models/input/create-user.dto';
 import { BasicAuthGuard } from '../../../core/guards/basic-auth.guard';
 import { UsersQueryRepository } from '../infrastructure/users.query-repositories';
@@ -21,16 +20,13 @@ import { DeleteUserCommand } from '../application/useCases/delete-user.use-case'
 export class UsersController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly usersService: UsersService,
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {
   }
 
   @Post('users')
   @UseGuards(BasicAuthGuard)
-  //Bus Execute
   async create(@Body() createUserDto: CreateUserDto) {
-    // const userId = await this.createUserUseCase.execute(createUserDto, true);
     const userId = await this.commandBus.execute(new CreateUserCommand({...createUserDto}, true))
     const user = await this.usersQueryRepository.userOutput(userId)
     return user
@@ -49,7 +45,6 @@ export class UsersController {
   @HttpCode(204)
   @UseGuards(BasicAuthGuard)
   remove(@Param('id') id: string) {
-    // return this.usersService.deleteUser(id);
     return this.commandBus.execute(new DeleteUserCommand(id))
   }
 }

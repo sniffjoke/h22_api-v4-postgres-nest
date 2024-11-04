@@ -1,20 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateUserDto, EmailConfirmationModel } from '../api/models/input/create-user.dto';
+import { Injectable } from '@nestjs/common';
+import { EmailConfirmationModel } from '../api/models/input/create-user.dto';
 import { SETTINGS } from '../../../core/settings/settings';
-import { UsersRepository } from '../infrastructure/users.repository';
 import { MailerService } from '@nestjs-modules/mailer';
 import { UuidService } from 'nestjs-uuid';
 import { add } from 'date-fns';
-import { CryptoService } from '../../../core/modules/crypto/application/crypto.service';
 
 @Injectable()
 export class UsersService {
 
   constructor(
-    private readonly usersRepository: UsersRepository,
     private readonly mailService: MailerService,
     private readonly uuidService: UuidService,
-    private readonly cryptoService: CryptoService,
   ) {
   }
 
@@ -51,32 +47,6 @@ export class UsersService {
   
              `,
     });
-  }
-
-  async resendEmail(email: string) {
-    const isUserExists = await this.usersRepository.findUserByEmail(email);
-    // const checkIsUserExistsAndNotConfirm = await this.usersRepository.findUserByEmail(email);
-    if (isUserExists.emailConfirmation.isConfirm) {
-      throw new BadRequestException('Email already activate')
-    }
-    const emailConfirmation: EmailConfirmationModel = this.createEmailConfirmation(false);
-    await this.sendActivationEmail(email, `${SETTINGS.PATH.API_URL}/?code=${emailConfirmation.confirmationCode as string}`);
-    const updateUserInfo = await this.usersRepository.updateUserByResendEmail(
-      isUserExists.id,
-      emailConfirmation
-    );
-    return updateUserInfo;
-  }
-
-  async activateEmail(code: string) {
-    const isUserExists = await this.usersRepository.findUserByCode(code);
-    if (isUserExists.emailConfirmation.isConfirm) {
-      throw new BadRequestException('Code already activate')
-    }
-    const updateUserInfo = await this.usersRepository.updateUserByActivateEmail(
-      isUserExists.id
-    );
-    return updateUserInfo;
   }
 
 }
