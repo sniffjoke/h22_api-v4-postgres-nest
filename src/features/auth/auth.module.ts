@@ -4,10 +4,7 @@ import { UsersModule } from "../users/users.module";
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TokensModule } from '../tokens/tokens.module';
 import { DevicesModule } from '../devices/devices.module';
-import { LoginUseCase } from './application/useCases/login.use-case';
-import { GetMeUseCase } from './application/useCases/get-me.use-case';
-import { RefreshTokenUseCase } from './application/useCases/refresh-token.use-case';
-import { LogoutUseCase } from './application/useCases/logout.use-case';
+import { AuthCommandHandlers } from './application/useCases';
 
 @Module({
   imports: [
@@ -17,17 +14,6 @@ import { LogoutUseCase } from './application/useCases/logout.use-case';
     TypeOrmModule.forFeature([]),
   ],
   controllers: [AuthController],
-  providers: [
-    LoginUseCase,
-    GetMeUseCase,
-    RefreshTokenUseCase,
-    LogoutUseCase
-  ],
-  exports: [
-    LoginUseCase,
-    GetMeUseCase,
-    RefreshTokenUseCase,
-    LogoutUseCase
-  ]
+  providers: [...AuthCommandHandlers]
 })
 export class AuthModule {}

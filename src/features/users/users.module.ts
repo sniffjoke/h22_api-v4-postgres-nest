@@ -12,6 +12,7 @@ import { CreateUserUseCase } from './application/useCases/create-user.use-case';
 import { DeleteUserUseCase } from './application/useCases/delete-user.use-case';
 import { ActivateEmailUseCase } from './application/useCases/activate-email.use-case';
 import { ResendEmailUseCase } from './application/useCases/resend-email.use-case';
+import { UsersCommandHandlers } from './application/useCases';
 
 @Module({
   imports: [
@@ -24,10 +25,7 @@ import { ResendEmailUseCase } from './application/useCases/resend-email.use-case
     UsersService,
     UsersRepository,
     UsersQueryRepository,
-    CreateUserUseCase,
-    DeleteUserUseCase,
-    ActivateEmailUseCase,
-    ResendEmailUseCase
+    ...UsersCommandHandlers
   ],
   exports: [
     CryptoModule,
@@ -35,10 +33,7 @@ import { ResendEmailUseCase } from './application/useCases/resend-email.use-case
     UsersService,
     UsersRepository,
     UsersQueryRepository,
-    CreateUserUseCase,
-    DeleteUserUseCase,
-    ActivateEmailUseCase,
-    ResendEmailUseCase
+    ...UsersCommandHandlers
   ],
 })
 export class UsersModule {
